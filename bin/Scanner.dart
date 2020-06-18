@@ -95,6 +95,8 @@ class Scanner {
           while (_peek() != '\n' && !_isAtEnd()) {
             _advance();
           }
+        } else if (_match('*')) {
+          _blockComment();
         } else {
           _addToken(TokenType.SLASH);
         }
@@ -136,6 +138,22 @@ class Scanner {
     } else {
       _addToken(TokenType.IDENTIFIER);
     }
+  }
+
+  void _blockComment() {
+    var foundTerminator = () => _peek() == '*' && _peekNext() == '/';
+    while (!foundTerminator() && !_isAtEnd()) {
+      if (_peek() == '\n') _line++;
+      _advance();
+    }
+
+    if (_isAtEnd()) {
+      Lox.error(_line, 'Unterminated comment.');
+    }
+
+    // the closing */
+    _advance();
+    _advance();
   }
 
   void _string() {
