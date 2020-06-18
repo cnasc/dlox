@@ -35,10 +35,9 @@ class Lox {
 
   static void _run(String source) {
     var scanner = Scanner(source);
-    List<Token> tokens = scanner.scanTokens();
+    var tokens = scanner.scanTokens();
 
     // For now, just print the token
-    print(tokens.length);
     tokens.forEach((token) {
       print(token);
     });
