@@ -2,6 +2,25 @@ import 'Token.dart';
 import 'TokenType.dart';
 import 'main.dart';
 
+Map<String, TokenType> keywords = {
+  'and': TokenType.AND,
+  'class': TokenType.CLASS,
+  'else': TokenType.ELSE,
+  'false': TokenType.FALSE,
+  'fun': TokenType.FUN,
+  'for': TokenType.FOR,
+  'if': TokenType.IF,
+  'nil': TokenType.NIL,
+  'or': TokenType.OR,
+  'print': TokenType.PRINT,
+  'return': TokenType.RETURN,
+  'super': TokenType.SUPER,
+  'this': TokenType.THIS,
+  'true': TokenType.TRUE,
+  'var': TokenType.VAR,
+  'while': TokenType.WHILE,
+};
+
 class Scanner {
   final String _source;
   final List<Token> _tokens = [];
@@ -98,9 +117,24 @@ class Scanner {
       default:
         if (_isDigit(c)) {
           _number();
+        } else if (_isAlpha(c)) {
+          _identifier();
         } else {
           Lox.error(_line, 'Unexpected character "$c".');
         }
+    }
+  }
+
+  void _identifier() {
+    while (_isAlphanumeric(_peek())) {
+      _advance();
+    }
+
+    var text = _source.substring(_start, _current);
+    if (keywords.containsKey(text)) {
+      _addToken(keywords[text]);
+    } else {
+      _addToken(TokenType.IDENTIFIER);
     }
   }
 
@@ -127,6 +161,16 @@ class Scanner {
   bool _isDigit(String c) {
     if (c == '\0') return false;
     return c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
+  }
+
+  bool _isAlpha(String c) {
+    return (c.compareTo('a') >= 0 && c.compareTo('z') <= 0) ||
+        (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ||
+        c == '_';
+  }
+
+  bool _isAlphanumeric(String c) {
+    return _isAlpha(c) || _isDigit(c);
   }
 
   void _number() {
