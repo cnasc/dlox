@@ -96,7 +96,11 @@ class Scanner {
         break;
 
       default:
-        Lox.error(_line, 'Unexpected character "$c".');
+        if (_isDigit(c)) {
+          _number();
+        } else {
+          Lox.error(_line, 'Unexpected character "$c".');
+        }
     }
   }
 
@@ -120,6 +124,28 @@ class Scanner {
     _addToken(TokenType.STRING, value);
   }
 
+  bool _isDigit(String c) {
+    if (c == '\0') return false;
+    return c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
+  }
+
+  void _number() {
+    while (_isDigit(_peek())) {
+      _advance();
+    }
+
+    if (_peek() == '.' && _isDigit(_peekNext())) {
+      // consume the '.'
+      _advance();
+      while (_isDigit(_peek())) {
+        _advance();
+      }
+    }
+
+    _addToken(
+        TokenType.NUMBER, double.parse(_source.substring(_start, _current)));
+  }
+
   bool _match(String expected) {
     if (_isAtEnd()) return false;
     if (_source[_current] != expected) return false;
@@ -133,9 +159,15 @@ class Scanner {
     return _source[_current];
   }
 
+  String _peekNext() {
+    if (_current + 1 >= _source.length) return '\0';
+    return _source[_current + 1];
+  }
+
   String _advance() {
     _current++;
-    return _source[_current - 1];
+    var res = _source[_current - 1];
+    return res;
   }
 
   void _addToken(TokenType type, [Object literal]) {
