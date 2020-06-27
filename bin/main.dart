@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'AstPrinter.dart';
+import 'Parser.dart';
 import 'Scanner.dart';
 import 'Token.dart';
+import 'TokenType.dart';
 
 class Lox {
   static bool hadError = false;
@@ -36,15 +39,25 @@ class Lox {
   static void _run(String source) {
     var scanner = Scanner(source);
     var tokens = scanner.scanTokens();
+    var parser = Parser(tokens);
+    var expression = parser.parse();
 
-    // For now, just print the token
-    tokens.forEach((token) {
-      print(token);
-    });
+    // Stop if there was a syntax error.
+    if (hadError) return;
+    
+    print(AstPrinter().print(expression));
   }
 
   static void error(int line, String message) {
     _report(line, '', message);
+  }
+
+  static void tokenError(Token token, String message) {
+    if (token.type == TokenType.EOF) {
+      _report(token.line, ' at end', message);
+    } else {
+      _report(token.line, ' at ${token.lexeme}', message);
+    }
   }
 
   static void _report(int line, String where, String message) {
